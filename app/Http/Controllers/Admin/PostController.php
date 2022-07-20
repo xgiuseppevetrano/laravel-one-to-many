@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Category as AppCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -32,6 +31,7 @@ class PostController extends Controller
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.posts.create', compact('categories'));
     }
 
@@ -59,7 +59,7 @@ class PostController extends Controller
         $newPost->published = isset($data['published']);
         $newPost->save();
 
-        return redirect()->route('admin.posts.show', $newPost['id']);
+        return redirect()->route('admin.posts.show', $newPost->id);
     }
 
     /**
@@ -70,8 +70,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        $categories = Category::all();
-        return view('admin.posts.show', compact('post', 'categories'));
+        return view('admin.posts.show', compact('post'));
     }
 
     /**
@@ -82,7 +81,9 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('admin.posts.edit', compact('post'));
+        $categories = Category::all();
+
+        return view('admin.posts.edit', compact('post', 'categories'));
     }
 
     /**
@@ -100,19 +101,18 @@ class PostController extends Controller
             'published' => 'sometimes|accepted',
             'category_id' => 'nullable|exists:categories,id'
         ]);
-        
+
         $data = $request->all();
-        
+
         if( $post->title != $data['title'] ) {
             $post->slug = $this->getSlug($data['title']);
         }
-
         $post->fill($data);
 
         $post->published = isset($data['published']);
 
         $post->save();
-        
+
         return redirect()->route('admin.posts.show', $post->id);
     }
 
